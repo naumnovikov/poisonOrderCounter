@@ -198,14 +198,65 @@ private:
 public:
     void addPositionToOrder(){
         positionStruct position{};
-        std::cout << "Type a price in yuan: ";
-        std::cin >> position.priceOfPositionInYuan;        // to add: check if the type if correct double
+
+        setPriceOfPositionInYuan(position);
         
+        setPositionTypeOfClothing(position);
+        
+        setPositionTime(position);
+        
+        addPriceToOrderSum(position);
+        
+        putPositionToOrder(position);
+    }
+    
+    void setPriceOfPositionInYuan(positionStruct& position){
+        std::cout << "Type a price in yuan: ";
+        double yuanPrice{0};
+        enteringInputYuanPriceTillCorrect(yuanPrice);
+        position.priceOfPositionInYuan = yuanPrice;
+    }
+    
+    void enteringInputYuanPriceTillCorrect(double& yuanPrice){
+        std::cin >> yuanPrice;
+        while (std::cin.fail() || std::cin.peek() != '\n'){
+            cleanCinConsoleAfterWrongInput();
+            std::cerr << "Wrong input. Type the price in yuan: ";
+            std::cin >> yuanPrice;
+        }
+    }
+    
+    void cleanCinConsoleAfterWrongInput(){
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    
+    void setPositionTypeOfClothing(positionStruct& position){
         std::cout << "\nWhat a type of clothing?\n1)Shoes\n2)Clothes\n3)Accessory\n";
-        unsigned short type{};
+        int type{};
         std::cout << "Type: ";
-        std::cin >> type;                                  // to add: check if the type if correct typeOfClothing
+        enteringInputTypeOfClothingTillCorrect(type);
+        setPositionTypeOfClothing(type, position);
         std::cout << '\n';
+    }
+    
+    void enteringInputTypeOfClothingTillCorrect(int& type){
+        std::cin >> type;
+        
+        while (std::cin.fail() || std::cin.peek() != '\n' || type < 1 || type > 3){
+            if (std::cin.fail() || std::cin.peek() != '\n'){
+                std::cerr << "Wrong input. Choose a type of clothing: ";
+            }
+            if ((type < 1 || type > 3) && (!(std::cin.fail() || std::cin.peek() != '\n'))){
+                std::cerr << "Type can't be less than 1 and more than 3. Choose a type of clothing: ";
+            }
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin >> type;
+        }
+    }
+    
+    void setPositionTypeOfClothing(int type, positionStruct& position){
         switch (type) {
             case 1:
                 position.positionTypeOfClothing = typeOfClothing::shoes;
@@ -219,10 +270,17 @@ public:
             default:
                 break;
         }
-        
+    }
+    
+    void setPositionTime(positionStruct& position){
         position.timeWhenAddedToOrder = std::chrono::system_clock::now();
-        
+    }
+    
+    void addPriceToOrderSum(positionStruct& position){
         orderPriceInYuan+=position.priceOfPositionInYuan;
+    }
+    
+    void putPositionToOrder(positionStruct& position){
         allPositionsInOrder[indexOfLastPositionAdded]=position;
     }
     
@@ -236,13 +294,17 @@ public:
         do {
             addPositionToOrder();
             ++indexOfLastPositionAdded;
-            std::cout << "Want to add more in order? ";                     // to add: check if the type if correct string Yes or No
+            std::cout << "Want to add more in order?(Yes/No) ";
             std::string choiceOfConinuingAdding{};
             std::cin >> choiceOfConinuingAdding;
+            while (choiceOfConinuingAdding != "Yes" && choiceOfConinuingAdding != "No"){
+                std::cerr << "Wrong input. The answer should be Yes or No.\nWant to add more in order?(Yes/No) ";
+                std::cin >> choiceOfConinuingAdding;
+            }
             std::cout << '\n';
-            if (choiceOfConinuingAdding == "Yes"){                         // make it correct
+            if (choiceOfConinuingAdding == "Yes"){
                 ifContinueAdding = continueAdding::Yes;
-            }else{
+            }else if (choiceOfConinuingAdding == "No"){
                 ifContinueAdding = continueAdding::No;
             }
         } while (ifContinueAdding == continueAdding::Yes);
@@ -288,7 +350,7 @@ int main(){
     orderObj.setYuanExchangeRate(yuanExchangeRate);
     orderObj.makingOrder();
     double orderInRub{orderObj.getOrderPriceInRub()};
-    std::cout << orderInRub;
+    std::cout << orderInRub << '\n';
 }
 
 void makeParse(HTMLpageWithExchangeRate& page){
